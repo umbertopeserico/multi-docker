@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t multi-docker-test -f client/Dockerfile.dev ./client
+
+script:
+  - docker run multi-docker-test npm test -- --coverage
+
+after_success:
+  - docker build -t umbertopeserico/multi-docker-client ./client
+  - docker build -t umbertopeserico/multi-docker-nginx ./nginx
+  - docker build -t umbertopeserico/multi-docker-server ./server
+  - docker build -t umbertopeserico/multi-docker-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push umbertopeserico/multi-docker-client
+  - docker push umbertopeserico/multi-docker-nginx
+  - docker push umbertopeserico/multi-docker-server
+  - docker push umbertopeserico/multi-docker-worker
